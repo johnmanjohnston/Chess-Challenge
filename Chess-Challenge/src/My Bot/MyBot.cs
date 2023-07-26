@@ -21,6 +21,20 @@ public class MyBot : IChessBot
 
         NegamaxEvaluation(searchDepth, -largeNumber, largeNumber, isWhite ? 1 : -1);
 
+        Move[] moves = board.GetLegalMoves();
+
+        bool moveFound = false;
+        foreach(Move move in moves)
+        {
+           if (bestMove == move) { moveFound = true; break; }
+        }
+
+        if (!moveFound)
+        {
+            bestMove = moves[0];
+            Console.WriteLine("Prevented illegal move.");
+        }
+        
         return bestMove;
     }
 
@@ -60,6 +74,27 @@ public class MyBot : IChessBot
             {
                 // Console.WriteLine("Encouraging pawns to move forward");
                 eval += 200; // Encourage pawns to move forward
+            }
+
+            if (board.GetPieceList(PieceType.Pawn, color == 1).Count < 5 && TotalPieceCount(color == 1) < 8)
+            {
+                Square startSquare = move.StartSquare;
+
+                // Numbers are vertical
+                // Alphabets are horizontal
+
+                bool pieceExists = false;
+                for(int i = 1; ++i < 8;)
+                {
+                    if (board.GetPiece(new Square(move.StartSquare.File, i)).PieceType != PieceType.None) {
+                        pieceExists = true; break;
+                    }
+
+                    if (TotalPieceCount(color == 1) < 8 && move.MovePieceType == PieceType.Pawn)
+                    {
+                        eval += 800; // Encourage pawns to move forward
+                    }
+                }
             }
 
             board.UndoMove(move);
